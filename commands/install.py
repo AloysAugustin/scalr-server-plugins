@@ -1,5 +1,5 @@
 import os
-import sys, argparse, logging
+import argparse, logging
 import scalr_server_config as cfg
 import scalr_server_repository as repo
 import json

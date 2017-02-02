@@ -1,1 +1,1 @@
-__all__ = ["list", "install"]
+__all__ = ["list-available", "install", "configure", "uninstall", "inspect", "list-installed"]
