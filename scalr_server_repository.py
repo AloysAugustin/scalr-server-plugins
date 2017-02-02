@@ -22,7 +22,7 @@ class ScalrServerPluginsInternalRepository:
         self.plugins = [
             {
                 'name':'testplugin',
-                'url' : 'file://' + os.path.expanduser('~/tmp/opt/scalr-server/embedded/plugins/templates/testplugin.zip'),
+                'url' : 'file://' + os.path.join(os.path.dirname(__file__), 'samples', 'testplugin.zip'),
                 'archive-type' : 'zip'
             },
 

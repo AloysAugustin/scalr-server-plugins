@@ -3,6 +3,7 @@ import sys, argparse, logging
 import scalr_server_config as cfg
 import scalr_server_repository as repo
 import json
+import types
 def process(args, loglevel):
 
     parser = argparse.ArgumentParser(
@@ -51,7 +52,37 @@ def process(args, loglevel):
 
 def configure(plugin_name, plugin_index):
     config = cfg.ScalrServerPluginsConfiguration()
-    plugin_spec_path = os.path.join(config.plugins_base_dir,plugin_name,str(plugin_index),'plugin.json')
+    plugin_spec_path = os.path.join(config.plugins_base_dir, plugin_name, str(plugin_index), 'plugin.json')
     plugin_spec = None
+    print "Starting configuration for plugin %s, instance %d" % (plugin_name, plugin_index)
     with open(plugin_spec_path) as f:
         plugin_spec = json.loads(f.read())
+    plugin_settings = dict()
+    plugin_settings_path = os.path.join(config.plugins_base_dir, plugin_name, str(plugin_index), 'settings.json')
+    # Load default settings
+    if (not 'parameters' in plugin_spec.keys()) or not (type(plugin_spec['parameters']) is types.ListType):
+        logging.debug("No parameters key found in plugin.json")
+        plugin_spec['parameters'] = []
+    plugin_settings_info = dict()
+    for p in plugin_spec['parameters']:
+        plugin_settings[ p['key'] ] = p['default']
+        plugin_settings_info[ p['key'] ] = p
+    # Is there a settings.json file already?
+    if os.path.isfile(plugin_settings_path):
+        # Then load these parameters as default
+        with open(plugin_settings_path) as f:
+            plugin_settings = json.loads(f.read())
+
+    # Now prompts the user to reconfigure everything
+    print "Description of the plugin: %s" % plugin_spec['description']
+    for k in plugin_settings.keys():
+        print "Please enter %s. [=%s]" % (plugin_settings_info[k]['description'], plugin_settings[k])
+        value = raw_input('-->')
+        if not value == '':
+            plugin_settings[k] = value
+
+    # Now outputs the json file
+    with open(plugin_settings_path, mode='w') as f:
+        f.write( json.dumps(plugin_settings, indent=2) )
+
+    logging.info("Plugin configured")

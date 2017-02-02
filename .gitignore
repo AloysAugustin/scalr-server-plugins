@@ -1,2 +1,4 @@
 .idea
 **.pyc
+**.zip
+**.DS_Store
