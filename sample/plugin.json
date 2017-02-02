@@ -1,0 +1,17 @@
+{
+  "name": "testplugin",
+  "description": "A Hello world plugin",
+  "endpoints": [
+    {
+      "path": "/",
+      "description": "This endpoint returns a hello NAME. NAME is a configuration-time parameter."
+    }
+  ],
+  "parameters": [
+    {
+      "key": "NAME",
+      "description": "The NAME parameter",
+      "default": "Igor"
+    }
+  ]
+}
