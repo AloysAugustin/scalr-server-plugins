@@ -41,7 +41,7 @@ def process(args, loglevel):
     available_instances = installed_instances(config, plugin_name)
     if not newArgs.instanceId:
         if len(available_instances) == 0:
-            logging.info("No available instance for plugin $s. Deleting the enclosing folder.", plugin_name)
+            logging.info("No available instance for plugin %s. Deleting the enclosing folder.", plugin_name)
             remove_plugin(config, plugin_name)
             return
         plugin_instance = available_instances[0]
