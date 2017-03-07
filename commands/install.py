@@ -52,7 +52,7 @@ def process(args, loglevel):
         return
     configure(plugin_name, available_index)
     venv_dir = install_venv(config, plugin_instance_dir)
-    install_httpd_config(config, plugin_name, plugin_index, venv_dir, plugin_instance_dir)
+    install_httpd_config(config, plugin_name, available_index, venv_dir, plugin_instance_dir)
     logging.info("Plugin %s installed with index %d.", plugin_name, available_index)
     logging.info("Reachable at location /plugins/%s/%d/", plugin_name, available_index)
 
