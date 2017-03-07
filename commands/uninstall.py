@@ -33,8 +33,8 @@ def process(args, loglevel):
             return
         logging.info("All instances of plugin %s successfully uninstalled", plugin_name)
         return
+    available_instances = [s for s in os.listdir(plugin_dir)]
     if not newArgs.instanceId:
-        available_instances = [s for s in os.listdir(plugin_dir)]
         if len(available_instances) == 0:
             logging.info("No available instance for plugin $s. Deleting the enclosing folder.", plugin_name)
             shutil.rmtree(plugin_dir)
@@ -48,6 +48,8 @@ def process(args, loglevel):
         if plugin_instance not in available_instances:
             logging.error("Wrong instance chosen.")
             return
+    else:
+        plugin_instance = newArgs.instanceId
         plugin_instance_path = os.path.join(plugin_dir,plugin_instance)
         shutil.rmtree(plugin_instance_path)
         logging.info("Successfully uninstalled instance %s.", plugin_instance)
