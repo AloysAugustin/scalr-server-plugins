@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+
 import os
 import argparse, logging
 import scalr_server_config as cfg
 import scalr_server_repository as repo
 import json
 import types
+
 def process(args, loglevel):
 
     parser = argparse.ArgumentParser(
@@ -49,6 +52,12 @@ def process(args, loglevel):
     logging.info("Plugin %s installed with index %d.", plugin_name, available_index)
     logging.info("Reachable at location /plugins/%s/%d/", plugin_name, available_index)
     configure(plugin_name, available_index)
+
+def install_venv(plugin_name, plugin_index):
+    pass
+
+def install_httpd_config(plugin_name, plugin_index):
+    pass
 
 def configure(plugin_name, plugin_index):
     config = cfg.ScalrServerPluginsConfiguration()

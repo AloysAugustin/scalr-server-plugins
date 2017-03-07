@@ -1,0 +1,23 @@
+# To be added at the end of:
+# /opt/scalr-server/embedded/cookbooks/scalr-server/templates/default/httpd/httpd.conf.erb
+
+# WSGI #
+<% if enable_module?(node, :wsgi) %>
+    LoadModule wsgi_module embedded/modules/mod_wsgi.so
+    Listen <%= node[:scalr_server][:wsgi][:bind_host] %>:<%= node[:scalr_server][:wsgi][:bind_port] %>
+    WSGISocketPrefix /opt/scalr-server/var/run/wsgi
+    <VirtualHost <%= node[:scalr_server][:wsgi][:bind_host] %>:<%= node[:scalr_server][:wsgi][:bind_port] %>>
+      DocumentRoot /opt/scalr-server/embedded/plugins
+      <Directory /opt/scalr-server/embedded/plugins>
+        <Files wsgi.py>
+          Require all granted
+        </Files>
+      </Directory>
+      ErrorLog  <%= log_dir_for node, 'httpd' %>/web.wsgi.error.log
+      <IfModule log_config_module>
+            CustomLog <%= log_dir_for node, 'httpd' %>/web.wsgi.access.log combined
+      </IfModule>
+      IncludeOptional /opt/scalr-server/etc/httpd/plugins/*/*.conf
+      <%= node[:scalr_server][:wsgi][:apache_config] %>
+    </VirtualHost>
+<% end %>

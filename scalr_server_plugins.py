@@ -10,8 +10,8 @@ from commands import *
 def list_commands():
     l = []
     for a in dir(commands):
-        if isinstance(commands.__dict__.get(a), types.FunctionType) or isinstance(commands.__dict__.get(a),
-                                                                                  types.ModuleType):
+        if (isinstance(commands.__dict__.get(a), types.FunctionType) or
+            isinstance(commands.__dict__.get(a), types.ModuleType)):
             l.append(a)
     return l
     pass
