@@ -33,7 +33,7 @@ def process(args, loglevel):
         try:
             remove_plugin(config, plugin_name)
         except Exception as e:
-            logging.error("Error deleting directory %s: %s", plugin_dir ,e.message)
+            logging.error("Error deleting directory %s: %s", plugin_dir(config, plugin_name), e.message)
             return
         logging.info("All instances of plugin %s successfully uninstalled", plugin_name)
         return
@@ -42,7 +42,7 @@ def process(args, loglevel):
     if not newArgs.instanceId:
         if len(available_instances) == 0:
             logging.info("No available instance for plugin $s. Deleting the enclosing folder.", plugin_name)
-            shutil.rmtree(plugin_dir)
+            remove_plugin(config, plugin_name)
             return
         plugin_instance = available_instances[0]
         print 'Available instances for plugin: %s' % available_instances
