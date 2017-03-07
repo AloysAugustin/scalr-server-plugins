@@ -6,6 +6,7 @@ import scalr_server_config as cfg
 import scalr_server_repository as repo
 import json
 import types
+import subprocess
 
 def process(args, loglevel):
 
@@ -49,15 +50,52 @@ def process(args, loglevel):
         logging.error("Cannot install plugin: %s",e.message)
         os.rmdir(plugin_instance_dir)
         return
+    configure(plugin_name, available_index)
+    venv_dir = install_venv(config, plugin_instance_dir)
+    install_httpd_config(config, plugin_name, plugin_index, venv_dir, plugin_instance_dir)
     logging.info("Plugin %s installed with index %d.", plugin_name, available_index)
     logging.info("Reachable at location /plugins/%s/%d/", plugin_name, available_index)
-    configure(plugin_name, available_index)
 
-def install_venv(plugin_name, plugin_index):
-    pass
+def install_venv(config, plugin_instance_dir):
+    logging.info('Installing virtual environment...')
+    venv_dir = os.path.join(plugin_instance_dir, '.venv')
+    requirements_path = os.path.join(plugin_instance_dir, 'requirements.txt')
+    activate_path = os.path.join(venv_dir, 'bin', 'activate')
+    subprocess.check_call(['/opt/scalr-server/embedded/bin/virtualenv', venv_dir])
+    if os.path.isfile(requirements_path):
+        subprocess.check_call('source {} && pip install -r {}'.format(activate_path, requirements_path), shell=True)
+    logging.info('Virtual environment installed.')
+    return venv_dir
 
-def install_httpd_config(plugin_name, plugin_index):
-    pass
+def install_httpd_config(config, plugin_name, plugin_index, venv_dir, plugin_instance_dir):
+    config_path = os.path.join(config.httpd_config_dir, plugin_name, '{}.conf'.format(plugin_index))
+    daemon_process_name = '{}_{}'.format(plugin_name, plugin_index)
+    wsgi_path = os.path.join(plugin_instance_dir, 'wsgi.py')
+
+    logging.info('Installing Apache configuration file...')
+    if not os.path.exists(os.path.dirname(config_path)):
+        try:
+            os.makedirs(os.path.dirname(config_path))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    with open(config_path, 'w') as config_file:
+        contents = """
+WSGIDaemonProcess {daemon_process_name} python-home={venv_dir} python-path={plugin_instance_dir}
+WSGIScriptAlias /{plugin_name}/{plugin_index} {wsgi_path}
+<Location /{plugin_name}/{plugin_index}>
+WSGIProcessGroup {daemon_process_name}
+</Location>
+""".format(daemon_process_name=daemon_process_name,
+           plugin_name=plugin_name,
+           plugin_index=plugin_index,
+           venv_dir=venv_dir,
+           plugin_instance_dir=plugin_instance_dir,
+           wsgi_path=wsgi_path)
+        config_file.write(contents)
+    logging.info('Apache config file created, restarting httpd...')
+    subprocess.check_call(['/usr/bin/scalr-server-manage', 'restart', 'httpd'])
+    logging.info('Apache restarted successfully')
 
 def configure(plugin_name, plugin_index):
     config = cfg.ScalrServerPluginsConfiguration()

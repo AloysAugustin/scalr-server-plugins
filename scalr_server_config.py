@@ -8,6 +8,7 @@ import scalr_server_repository as repo
 class ScalrServerPluginsConfiguration:
     def __init__(self):
         self.plugins_base_dir = os.path.expanduser('~/tmp/opt/scalr-server/embedded/plugins')
+        self.httpd_config_dir = '/opt/scalr-server/etc/httpd/plugins'
         self.repository_type = 'internal'
 
     def checkConfig(self):
