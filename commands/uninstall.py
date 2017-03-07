@@ -50,7 +50,7 @@ def process(args, loglevel):
         s = raw_input('-->')
         if len(s) > 0 and s in available_instances:
             plugin_instance = s
-        else:
+        elif len(s) > 0:
             logging.error("Wrong instance chosen.")
             return
         remove_instance(config, plugin_name, plugin_instance)
