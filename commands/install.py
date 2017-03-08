@@ -50,11 +50,11 @@ def process(args, loglevel):
         venv_dir = install_venv(config, plugin_instance_dir)
         install_httpd_config(config, plugin_name, plugin_instance, venv_dir, plugin_instance_dir)
     except Exception as e:
-        logging.error("Cannot install plugin: %s",e.message)
+        logging.exception("Cannot install plugin: %s",e.message)
         remove_instance(config, plugin_name, plugin_instance)
         return
-    logging.info("Plugin %s installed with index %d.", plugin_name, plugin_instance)
-    logging.info("Reachable at location /plugins/%s/%d/", plugin_name, plugin_instance)
+    logging.info("Plugin %s installed with index %s.", plugin_name, plugin_instance)
+    logging.info("Reachable at location /plugins/%s/%s/", plugin_name, plugin_instance)
 
 def install_venv(config, plugin_instance_dir):
     logging.info('Installing virtual environment...')
@@ -98,7 +98,7 @@ def configure(plugin_name, plugin_index):
     config = cfg.ScalrServerPluginsConfiguration()
     plugin_spec_path = os.path.join(instance_dir(config, plugin_name, plugin_index), 'plugin.json')
     plugin_spec = None
-    print "Starting configuration for plugin %s, instance %d" % (plugin_name, plugin_index)
+    print "Starting configuration for plugin %s, instance %s" % (plugin_name, plugin_index)
     with open(plugin_spec_path) as f:
         plugin_spec = json.loads(f.read())
     plugin_settings = dict()
