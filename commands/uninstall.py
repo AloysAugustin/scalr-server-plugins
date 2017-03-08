@@ -24,6 +24,7 @@ def process(args, config):
     if args.all:
         try:
             remove_plugin(config, plugin_name)
+            reload_config()
         except Exception as e:
             logging.error("Error deleting directory %s: %s", plugin_dir(config, plugin_name), e.message)
             return
@@ -42,4 +43,5 @@ def process(args, config):
             return
 
     remove_instance(config, plugin_name, plugin_instance)
+    reload_config()
     logging.info("Successfully uninstalled instance %s of plugin %s.", plugin_instance, plugin_name)
