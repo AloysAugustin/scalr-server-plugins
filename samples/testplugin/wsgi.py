@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 import json
-import Flask # dependency test
+import flask # dependency test
 import os
 import sys
-import test_module
+import test_module # local import test
 
 settings = {}
 
@@ -17,6 +17,6 @@ def application(environ, start_response):
     start_response(status, response_headers)
     return [output]
 
-config_file = os.path.join(__file__, 'settings.json')
+config_file = os.path.join(os.path.dirname(__file__), 'settings.json')
 with open(config_file) as f:
     settings = json.loads(f.read())
