@@ -89,7 +89,7 @@ def configure(config, plugin_name, plugin_index):
     with open(plugin_spec_path) as f:
         plugin_spec = json.loads(f.read())
     plugin_settings = dict()
-    plugin_settings_path = instance_config_path(config, plugin_name, plugin_instance)
+    plugin_settings_path = instance_config_path(config, plugin_name, plugin_index)
     # Load default settings
     if (not 'parameters' in plugin_spec.keys()) or not (type(plugin_spec['parameters']) is types.ListType):
         logging.debug("No parameters key found in plugin.json")
