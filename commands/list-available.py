@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+
 import logging
 import scalr_server_config as cfg
 import scalr_server_repository as repo
+
 def process(args, loglevel):
     config = cfg.ScalrServerPluginsConfiguration()
     if not config.checkConfig():

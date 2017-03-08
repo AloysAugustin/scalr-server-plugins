@@ -15,6 +15,9 @@ def plugin_dir(config, plugin_name):
 def instance_dir(config, plugin_name, plugin_instance):
     return os.path.join(config.plugins_base_dir, plugin_name, plugin_instance)
 
+def installed_plugins(config):
+    return [s for s in os.listdir(config.plugins_base_dir)]
+
 def installed_instances(config, plugin_name):
     if exists(config, plugin_name):
         return [s for s in os.listdir(plugin_dir(config, plugin_name))]
