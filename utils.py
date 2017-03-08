@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 def singleton(cls):
     instances = {}
     def getinstance():

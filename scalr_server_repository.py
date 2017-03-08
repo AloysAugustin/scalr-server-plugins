@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import utils
 import os
 import zipfile
@@ -5,6 +7,7 @@ import tarfile
 import urllib2
 import StringIO
 from contextlib import closing
+
 @utils.singleton
 def repositories():
     return dict()
@@ -25,7 +28,6 @@ class ScalrServerPluginsInternalRepository:
                 'url' : 'file://' + os.path.join(os.path.dirname(__file__), 'samples', 'testplugin.zip'),
                 'archive-type' : 'zip'
             },
-
         ]
 
     def list_available_plugins(self):
@@ -48,5 +50,3 @@ class ScalrServerPluginsInternalRepository:
                 z.extractall(target_dir)
             else:
                 raise Exception('Unsupported Archive type')
-
-

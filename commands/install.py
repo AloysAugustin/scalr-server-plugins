@@ -8,6 +8,8 @@ import json
 import types
 import subprocess
 
+from common import *
+
 def process(args, loglevel):
 
     parser = argparse.ArgumentParser(
@@ -25,36 +27,34 @@ def process(args, loglevel):
 
     repository = repo.repositories()[config.repository_type]()
 
-    plugin_base_dir = config.plugins_base_dir
     plugin_name = newArgs.pluginName
     if not plugin_name in repository.list_available_plugins():
         logging.error("Plugin not found in repository!")
         return
-    #Is an instance of the plugin already installed?
-    plugin_dir = os.path.join(plugin_base_dir,plugin_name)
-    plugin_instances = []
-    if plugin_name in os.listdir(plugin_base_dir):
-        plugin_instances += [int(x) for x in os.listdir(plugin_dir)]
-    else:
-        os.mkdir(plugin_dir)
+
+    if not exists(config, plugin_name):
+        create_plugin_dir(config, plugin_name)
+
+    plugin_instances = installed_instances(config, plugin_name)
     logging.debug("Number of already existing instances: %d", len(plugin_instances))
     available_index = 0
-    while (available_index in plugin_instances):
+    while str(available_index) in plugin_instances:
         available_index += 1
-    logging.debug("Chosen index: %d", available_index)
-    plugin_instance_dir = os.path.join(plugin_dir,str(available_index))
-    os.mkdir(plugin_instance_dir)
+    plugin_instance = str(available_index)
+    logging.debug("Chosen index: %s", plugin_instance)
+    create_instance_dir(config, plugin_name, plugin_instance)
+    plugin_instance_dir = instance_dir(config, plugin_name, plugin_instance)
     try:
         repository.install_plugin_in_dir(plugin_name,plugin_instance_dir)
+        configure(plugin_name, plugin_instance)
+        venv_dir = install_venv(config, plugin_instance_dir)
+        install_httpd_config(config, plugin_name, plugin_instance, venv_dir, plugin_instance_dir)
     except Exception as e:
         logging.error("Cannot install plugin: %s",e.message)
-        os.rmdir(plugin_instance_dir)
+        remove_instance(config, plugin_name, plugin_instance)
         return
-    configure(plugin_name, available_index)
-    venv_dir = install_venv(config, plugin_instance_dir)
-    install_httpd_config(config, plugin_name, available_index, venv_dir, plugin_instance_dir)
-    logging.info("Plugin %s installed with index %d.", plugin_name, available_index)
-    logging.info("Reachable at location /plugins/%s/%d/", plugin_name, available_index)
+    logging.info("Plugin %s installed with index %d.", plugin_name, plugin_instance)
+    logging.info("Reachable at location /plugins/%s/%d/", plugin_name, plugin_instance)
 
 def install_venv(config, plugin_instance_dir):
     logging.info('Installing virtual environment...')
@@ -68,17 +68,15 @@ def install_venv(config, plugin_instance_dir):
     return venv_dir
 
 def install_httpd_config(config, plugin_name, plugin_index, venv_dir, plugin_instance_dir):
-    config_path = os.path.join(config.httpd_config_dir, plugin_name, '{}.conf'.format(plugin_index))
+    config_path = httpd_config_file(config, plugin_name, plugin_index)
     daemon_process_name = '{}_{}'.format(plugin_name, plugin_index)
     wsgi_path = os.path.join(plugin_instance_dir, 'wsgi.py')
+    if not os.path.isfile(wsgi_path):
+        raise Exception('WSGI module {} not found, plugin will not be functional'.format(wsgi_path))
 
     logging.info('Installing Apache configuration file...')
-    if not os.path.exists(os.path.dirname(config_path)):
-        try:
-            os.makedirs(os.path.dirname(config_path))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
+    create_dir(os.path.dirname(config_path))
+
     with open(config_path, 'w') as config_file:
         contents = """
 WSGIDaemonProcess {daemon_process_name} python-home={venv_dir} python-path={plugin_instance_dir}
@@ -93,19 +91,18 @@ WSGIProcessGroup {daemon_process_name}
            plugin_instance_dir=plugin_instance_dir,
            wsgi_path=wsgi_path)
         config_file.write(contents)
-    logging.info('Apache config file created, restarting httpd...')
-    subprocess.check_call(['/usr/bin/scalr-server-manage', 'restart', 'httpd'])
-    logging.info('Apache restarted successfully')
+    reload_config()
+    logging.info('Apache configured successfully')
 
 def configure(plugin_name, plugin_index):
     config = cfg.ScalrServerPluginsConfiguration()
-    plugin_spec_path = os.path.join(config.plugins_base_dir, plugin_name, str(plugin_index), 'plugin.json')
+    plugin_spec_path = os.path.join(instance_dir(config, plugin_name, plugin_index), 'plugin.json')
     plugin_spec = None
     print "Starting configuration for plugin %s, instance %d" % (plugin_name, plugin_index)
     with open(plugin_spec_path) as f:
         plugin_spec = json.loads(f.read())
     plugin_settings = dict()
-    plugin_settings_path = os.path.join(config.plugins_base_dir, plugin_name, str(plugin_index), 'settings.json')
+    plugin_settings_path = os.path.join(instance_dir(config, plugin_name, plugin_index), 'settings.json')
     # Load default settings
     if (not 'parameters' in plugin_spec.keys()) or not (type(plugin_spec['parameters']) is types.ListType):
         logging.debug("No parameters key found in plugin.json")

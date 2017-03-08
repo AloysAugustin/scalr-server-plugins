@@ -2,9 +2,9 @@
 
 import argparse
 import logging
-import os
-import shutil
 import scalr_server_config as cfg
+
+from common import *
 
 def process(args, loglevel):
     parser = argparse.ArgumentParser(
@@ -62,30 +62,3 @@ def process(args, loglevel):
             return
         remove_instance(config, plugin_name, plugin_instance)
         logging.info("Successfully uninstalled instance %s of plugin %s.", plugin_instance, plugin_name)
-
-def exists(config, plugin_name):
-    return os.path.isdir(plugin_dir(config, plugin_name))
-
-def plugin_dir(config, plugin_name):
-    return os.path.join(config.plugins_base_dir, plugin_name)
-
-def instance_dir(config, plugin_name, plugin_instance):
-    return os.path.join(config.plugins_base_dir, plugin_name, plugin_instance)
-
-def installed_instances(config, plugin_name):
-    return [s for s in os.listdir(plugin_dir(config, plugin_name))]
-
-def remove_instance(config, plugin_name, plugin_instance):
-    shutil.rmtree(instance_dir(config, plugin_name, plugin_instance))
-    # Removing associated config
-    # TODO: deduplicate code with install.py
-    httpd_config_file = os.path.join(config.httpd_config_dir, plugin_name, '{}.conf'.format(plugin_instance))
-    os.remove(httpd_config_file)
-
-    if len(installed_instances(config, plugin_name)) == 0:
-        remove_plugin(config, plugin_name)
-
-def remove_plugin(config, plugin_name):
-    shutil.rmtree(plugin_dir(config, plugin_name))
-    httpd_config_dir = os.path.join(config.httpd_config_dir, plugin_name)
-    shutil.rmtree(httpd_config_dir)
