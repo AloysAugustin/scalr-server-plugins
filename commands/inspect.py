@@ -26,6 +26,7 @@ def process(args, config):
             return
 
     plugin_settings_path = instance_config_path(config, plugin_name, plugin_instance)
+    print 'Instance {} of plugin {} is installed at: {}'.format(plugin_instance, plugin_name, instance_dir(config, plugin_name, plugin_instance))
     print 'Instance {} of plugin {} settings:'.format(plugin_instance, plugin_name)
     with open(plugin_settings_path) as f:
         print f.read()
