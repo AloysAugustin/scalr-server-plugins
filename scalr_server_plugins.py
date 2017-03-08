@@ -1,51 +1,57 @@
 #!/usr/bin/env python
 #
 
-# import modules used here -- sys is a very standard one
 import sys, argparse, logging
 import types
+
 import commands
-from commands import *
+import scalr_server_config as cfg
 
 def list_commands():
     l = []
     for a in dir(commands):
-        if (isinstance(commands.__dict__.get(a), types.FunctionType) or
-            isinstance(commands.__dict__.get(a), types.ModuleType)):
+        if (isinstance(commands.__dict__.get(a), types.ModuleType) and
+                hasattr(commands.__dict__.get(a), 'process') and
+                hasattr(commands.__dict__.get(a), 'setup_parser')):
             l.append(a)
     return l
-    pass
 
-# Gather our code in a main() function
+def add_parser(command, subparsers):
+    mod = commands.__dict__.get(command)
+    parser = subparsers.add_parser(command)
+    return getattr(mod, 'setup_parser').__call__(parser)
+
+def make_subparsers_help(parser):
+    return 'Command to execute. One of {}. Run "{} <command> --help" to get command-specific help.'.format(
+            ', '.join(list_commands()),
+            parser.prog
+        )
+
 def main(args, loglevel):
     logging.basicConfig(format="%(levelname)s: %(message)s", level=loglevel)
-    cmdString = args.cmd[0]
-    args.cmd.pop(0)
-    cmd = commands.__dict__.get(cmdString)
-    if isinstance(cmd,types.ModuleType):
-        getattr(cmd, 'process').__call__(args.args, loglevel)
-    elif isinstance(cmd, types.FunctionType):
-        cmd.__call__(args.args, loglevel)
-    else:
-        raise StandardError("Not Implemented")
 
+    config = cfg.ScalrServerPluginsConfiguration()
+    if not config.checkConfig():
+        logging.error("Configuration is incorrect")
+        return
 
-# Standard boilerplate to call the main() function to begin
-# the program.
+    mod = commands.__dict__.get(args.command)
+    getattr(mod, 'process').__call__(args, config)
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="Scalr plugin management CLI"
-    )
-    parser.add_argument(
-        "cmd",
-        nargs=1,
-        help="Execute COMMAND",
-        metavar="COMMAND"
-        )
-    parser.add_argument(
-        'args',
-        nargs=argparse.REMAINDER)
+    parser = argparse.ArgumentParser(description="Scalr plugin management CLI")
+    parser.add_argument('--verbose', '-v', action='count',
+                        help='Increase verbosity: -v -> INFO, -vv -> DEBUG', default=0)
+
+    subparsers = parser.add_subparsers(metavar='command', dest='command',
+                                       help=make_subparsers_help(parser))
+    for command in list_commands():
+        add_parser(command, subparsers)
 
     args = parser.parse_args()
-    loglevel = logging.INFO
+
+    verbose = min(args.verbose, 2)
+    loglevel = {0:logging.WARNING, 
+                1:logging.INFO,
+                2:logging.DEBUG}[verbose]
     main(args, loglevel)

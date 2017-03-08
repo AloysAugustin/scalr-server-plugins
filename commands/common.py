@@ -23,6 +23,23 @@ def installed_instances(config, plugin_name):
         return [s for s in os.listdir(plugin_dir(config, plugin_name))]
     return []
 
+def prompt_for_instance(config, plugin_name):
+    available_instances = installed_instances(config, plugin_name)
+    if len(available_instances) == 0:
+        logging.info("No available instance for plugin %s. Deleting traces of this plugin.", plugin_name)
+        remove_plugin(config, plugin_name)
+        return None
+    plugin_instance = available_instances[0]
+    print 'Available instances for plugin: %s' % available_instances
+    print 'Please choose one [=%s]' % plugin_instance
+    s = raw_input('-->')
+    if len(s) > 0 and s in available_instances:
+        return s
+    elif len(s) > 0:
+        return None
+    else:
+        return plugin_instance
+
 def create_instance_dir(config, plugin_name, plugin_instance):
     create_dir(instance_dir(config, plugin_name, plugin_instance))
 
@@ -39,6 +56,9 @@ def create_plugin_dir(config, plugin_name):
 def remove_plugin(config, plugin_name):
     remove_dir(plugin_dir(config, plugin_name))
     remove_dir(httpd_config_dir(config, plugin_name))
+
+def instance_config_path(config, plugin_name, plugin_instance):
+    return os.path.join(config.plugins_base_dir, plugin_name, plugin_instance, 'settings.json')
 
 def httpd_config_dir(config, plugin_name):
     return os.path.join(config.httpd_config_dir, plugin_name)

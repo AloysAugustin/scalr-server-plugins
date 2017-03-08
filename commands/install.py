@@ -1,33 +1,21 @@
 #!/usr/bin/env python
 
 import os
-import argparse, logging
-import scalr_server_config as cfg
-import scalr_server_repository as repo
+import logging
 import json
 import types
 import subprocess
 
 from common import *
 
-def process(args, loglevel):
-
-    parser = argparse.ArgumentParser(
-        description="Install a Scalr plugin"
-    )
+def setup_parser(parser):
+    parser.description = 'Install a Scalr plugin'
     parser.add_argument("pluginName", metavar="NAME", help="Install plugin NAME")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbosity")
-    newArgs = parser.parse_args(args=args)
 
-    config = cfg.ScalrServerPluginsConfiguration()
+def process(args, config):
+    repository = config.getRepository()
 
-    if not config.checkConfig():
-        logging.error("Configuration is incorrect")
-        return
-
-    repository = repo.repositories()[config.repository_type]()
-
-    plugin_name = newArgs.pluginName
+    plugin_name = args.pluginName
     if not plugin_name in repository.list_available_plugins():
         logging.error("Plugin not found in repository!")
         return
@@ -46,7 +34,7 @@ def process(args, loglevel):
     plugin_instance_dir = instance_dir(config, plugin_name, plugin_instance)
     try:
         repository.install_plugin_in_dir(plugin_name,plugin_instance_dir)
-        configure(plugin_name, plugin_instance)
+        configure(config, plugin_name, plugin_instance)
         venv_dir = install_venv(config, plugin_instance_dir)
         install_httpd_config(config, plugin_name, plugin_instance, venv_dir, plugin_instance_dir)
     except Exception as e:
@@ -94,15 +82,14 @@ WSGIProcessGroup {daemon_process_name}
     reload_config()
     logging.info('Apache configured successfully')
 
-def configure(plugin_name, plugin_index):
-    config = cfg.ScalrServerPluginsConfiguration()
+def configure(config, plugin_name, plugin_index):
     plugin_spec_path = os.path.join(instance_dir(config, plugin_name, plugin_index), 'plugin.json')
     plugin_spec = None
     print "Starting configuration for plugin %s, instance %s" % (plugin_name, plugin_index)
     with open(plugin_spec_path) as f:
         plugin_spec = json.loads(f.read())
     plugin_settings = dict()
-    plugin_settings_path = os.path.join(instance_dir(config, plugin_name, plugin_index), 'settings.json')
+    plugin_settings_path = instance_config_path(config, plugin_name, plugin_instance)
     # Load default settings
     if (not 'parameters' in plugin_spec.keys()) or not (type(plugin_spec['parameters']) is types.ListType):
         logging.debug("No parameters key found in plugin.json")

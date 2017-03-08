@@ -1,41 +1,33 @@
-import scalr_server_config as cfg
-import install
+#!/usr/bin/env python
+
 import logging
 import argparse
 import os
 
-def process(args, loglevel):
-    parser = argparse.ArgumentParser(
-        description="Reconfigure a Scalr plugin"
-    )
-    parser.add_argument("pluginName", metavar="NAME", help="Uninstall plugin NAME")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbosity")
-    parser.add_argument("--instanceId", "-i", metavar="INDEX", help="Uninstall plugin instance INDEX")
-    newArgs = parser.parse_args(args=args)
-    config = cfg.ScalrServerPluginsConfiguration()
-    if not config.checkConfig():
-        logging.error("Configuration is incorrect")
-        return
+from common import *
+import install
 
-    plugin_name = newArgs.pluginName
-    plugin_dir = os.path.join(config.plugins_base_dir, plugin_name)
-    if not os.path.isdir(plugin_dir):
+def setup_parser(parser):
+    parser.description = 'Reconfigure an existing Scalr plugin instance'
+    parser.add_argument("pluginName", metavar="NAME", help="Reconfigure plugin NAME")
+    parser.add_argument("--instanceId", "-i", metavar="INDEX", help="Reconfigure plugin instance INDEX")
+
+def process(args, config):
+    plugin_name = args.pluginName
+
+    if not exists(config, plugin_name):
         logging.error("This plugin is not installed in the first place")
         return
-    available_instances = [s for s in os.listdir(plugin_dir)]
-    if not newArgs.instanceId:
-        if len(available_instances) == 0:
-            logging.info("No available instance for plugin $s. Nothing to do", plugin_name)
-            return
-        plugin_instance = available_instances[0]
-        print 'Available instances for plugin: %s' % available_instances
-        print 'Please choose one to reconfigure [=%s]' % plugin_instance
-        s = raw_input('-->')
-        if not s == '':
-            plugin_instance = s
-        if plugin_instance not in available_instances:
-            logging.error("Wrong instance chosen.")
+
+    if not args.instanceId:
+        plugin_instance = prompt_for_instance(config, plugin_name)
+        if not plugin_instance:
+            logging.error('Invalid instance selected, aborting')
             return
     else:
-        plugin_instance = newArgs.instanceId
-    install.configure(plugin_name, int(plugin_instance) )
+        plugin_instance = args.instanceId
+        if not plugin_instance in installed_instances(config, plugin_name):
+            logging.error('Instance {} of plugin {} doesn\'t exist'.format(plugin_instance, plugin_name))
+            return
+
+    install.configure(config, plugin_name, plugin_instance)
