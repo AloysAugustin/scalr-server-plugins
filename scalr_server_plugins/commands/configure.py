@@ -17,17 +17,18 @@ def process(args, config):
 
     if not exists(config, plugin_name):
         logging.error("This plugin is not installed in the first place")
-        return
+        return 1
 
     if not args.instanceId:
         plugin_instance = prompt_for_instance(config, plugin_name)
         if not plugin_instance:
             logging.error('Invalid instance selected, aborting')
-            return
+            return 1
     else:
         plugin_instance = args.instanceId
         if not plugin_instance in installed_instances(config, plugin_name):
             logging.error('Instance {} of plugin {} doesn\'t exist'.format(plugin_instance, plugin_name))
-            return
+            return 1
 
     install.configure(config, plugin_name, plugin_instance)
+    return 0

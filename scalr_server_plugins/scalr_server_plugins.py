@@ -27,18 +27,10 @@ def make_subparsers_help(parser):
             parser.prog
         )
 
-def main(args, loglevel):
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=loglevel)
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
 
-    config = cfg.ScalrServerPluginsConfiguration()
-    if not config.checkConfig():
-        logging.error("Configuration is incorrect")
-        return
-
-    mod = commands.__dict__.get(args.command)
-    getattr(mod, 'process').__call__(args, config)
-
-if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Scalr plugin management CLI")
     parser.add_argument('--verbose', '-v', action='count',
                         help='Increase verbosity: -v -> INFO, -vv -> DEBUG', default=0)
@@ -48,10 +40,22 @@ if __name__ == '__main__':
     for command in list_commands():
         add_parser(command, subparsers)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     verbose = min(args.verbose, 2)
     loglevel = {0:logging.WARNING, 
                 1:logging.INFO,
                 2:logging.DEBUG}[verbose]
-    main(args, loglevel)
+
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=loglevel)
+
+    config = cfg.ScalrServerPluginsConfiguration()
+    if not config.checkConfig():
+        logging.error("Configuration is incorrect")
+        return
+
+    mod = commands.__dict__.get(args.command)
+    return getattr(mod, 'process').__call__(args, config)
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -15,3 +15,4 @@ def process(args, config):
     print('Installed instances per plugin are:')
     for plugin in plugins:
         print plugin, ': ', str(installed_instances(config, plugin))
+    return 0

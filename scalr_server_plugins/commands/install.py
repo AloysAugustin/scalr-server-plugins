@@ -18,7 +18,7 @@ def process(args, config):
     plugin_name = args.pluginName
     if not plugin_name in repository.list_available_plugins():
         logging.error("Plugin not found in repository!")
-        return
+        return 1
 
     if not exists(config, plugin_name):
         create_plugin_dir(config, plugin_name)
@@ -40,9 +40,10 @@ def process(args, config):
     except Exception as e:
         logging.exception("Cannot install plugin: %s",e.message)
         remove_instance(config, plugin_name, plugin_instance)
-        return
+        return 1
     logging.info("Plugin %s installed with index %s.", plugin_name, plugin_instance)
     logging.info("Reachable at location /plugins/%s/%s/", plugin_name, plugin_instance)
+    return 0
 
 def install_venv(config, plugin_instance_dir):
     logging.info('Installing virtual environment...')

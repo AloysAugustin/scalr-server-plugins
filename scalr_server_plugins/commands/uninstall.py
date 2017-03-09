@@ -14,12 +14,12 @@ def setup_parser(parser):
 def process(args, config):
     if args.all and not args.instanceId is None:
         logging.error("Invalid arguments, can't have --all and --instanceId at the same time")
-        return
+        return 1
 
     plugin_name = args.pluginName
     if not exists(config, plugin_name):
         logging.error("No instances of this plugin to delete")
-        return
+        return 1
 
     if args.all:
         try:
@@ -27,21 +27,22 @@ def process(args, config):
             reload_config()
         except Exception as e:
             logging.error("Error deleting directory %s: %s", plugin_dir(config, plugin_name), e.message)
-            return
+            return 1
         logging.info("All instances of plugin %s successfully uninstalled", plugin_name)
-        return
+        return 0
 
     if not args.instanceId:
         plugin_instance = prompt_for_instance(config, plugin_name)
         if not plugin_instance:
             logging.error('Invalid instance selected, aborting')
-            return
+            return 1
     else:
         plugin_instance = args.instanceId
         if not plugin_instance in installed_instances(config, plugin_name):
             logging.error('Instance {} of plugin {} doesn\'t exist'.format(plugin_instance, plugin_name))
-            return
+            return 1
 
     remove_instance(config, plugin_name, plugin_instance)
     reload_config()
     logging.info("Successfully uninstalled instance %s of plugin %s.", plugin_instance, plugin_name)
+    return 0
