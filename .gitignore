@@ -1,6 +1,5 @@
 .idea
 **.pyc
-**.zip
 **.DS_Store
 /dist/
 /*.egg-info
