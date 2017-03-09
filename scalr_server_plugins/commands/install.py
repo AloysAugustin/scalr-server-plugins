@@ -50,7 +50,8 @@ def install_venv(config, plugin_instance_dir):
     venv_dir = os.path.join(plugin_instance_dir, '.venv')
     requirements_path = os.path.join(plugin_instance_dir, 'requirements.txt')
     activate_path = os.path.join(venv_dir, 'bin', 'activate')
-    subprocess.check_call(['/opt/scalr-server/embedded/bin/virtualenv', venv_dir])
+    # Create virtualenv
+    subprocess.check_call(['virtualenv', venv_dir])
     if os.path.isfile(requirements_path):
         subprocess.check_call('. {} && pip install -r {}'.format(activate_path, requirements_path), shell=True)
     logging.info('Virtual environment installed.')

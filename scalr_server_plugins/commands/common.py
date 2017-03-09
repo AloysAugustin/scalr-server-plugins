@@ -68,7 +68,13 @@ def httpd_config_file(config, plugin_name, plugin_instance):
 
 def reload_config():
     logging.info('Restarting httpd...')
-    subprocess.check_call(['/usr/bin/scalr-server-manage', 'restart', 'httpd'])
+    try:
+        subprocess.check_call(['/usr/bin/scalr-server-manage', 'restart', 'httpd'])
+    except OSError as exc:
+        if exc.errno == errno.ENOENT:
+            logging.warning('Could not restart httpd: /usr/bin/scalr-server-manage not found')
+        else:
+            raise
 
 def create_dir(path):
     try:

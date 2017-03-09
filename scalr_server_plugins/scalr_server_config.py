@@ -8,8 +8,8 @@ import scalr_server_repository as repo
 @utils.singleton
 class ScalrServerPluginsConfiguration:
     def __init__(self):
-        self.plugins_base_dir = os.path.expanduser('~/tmp/opt/scalr-server/embedded/plugins')
-        self.httpd_config_dir = os.path.expanduser('~/tmp/opt/scalr-server/etc/httpd/plugins')
+        self.plugins_base_dir = '/opt/scalr-server/embedded/plugins'
+        self.httpd_config_dir = '/opt/scalr-server/etc/httpd/plugins'
         self.repository_type = 'internal'
 
     def checkConfig(self):
@@ -29,3 +29,7 @@ class ScalrServerPluginsConfiguration:
 
     def getRepository(self):
         return repo.repositories()[self.repository_type]()
+
+    def setBasePath(self, path):
+        self.plugins_base_dir = os.path.expanduser(path + self.plugins_base_dir)
+        self.httpd_config_dir = os.path.expanduser(path + self.httpd_config_dir)

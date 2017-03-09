@@ -15,9 +15,9 @@ setup(name='scalr_server_plugins',
       packages=find_packages(),
       install_requires=[
           'virtualenv',
+          'PyYAML',
       ],
       entry_points = {
           'console_scripts': ['scalr-server-plugins=scalr_server_plugins:main'],
       },
-      include_package_data=True,
       zip_safe=False)

@@ -34,6 +34,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Scalr plugin management CLI")
     parser.add_argument('--verbose', '-v', action='count',
                         help='Increase verbosity: -v -> INFO, -vv -> DEBUG', default=0)
+    parser.add_argument('--basePath', help='Base directory for plugin installation, used for testing with e.g. "~/tmp/"')
 
     subparsers = parser.add_subparsers(metavar='command', dest='command',
                                        help=make_subparsers_help(parser))
@@ -50,6 +51,8 @@ def main(argv=None):
     logging.basicConfig(format="%(levelname)s: %(message)s", level=loglevel)
 
     config = cfg.ScalrServerPluginsConfiguration()
+    if args.basePath:
+        config.setBasePath(args.basePath)
     if not config.checkConfig():
         logging.error("Configuration is incorrect")
         return

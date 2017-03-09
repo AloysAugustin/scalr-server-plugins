@@ -7,6 +7,8 @@ import tarfile
 import urllib2
 import StringIO
 from contextlib import closing
+from yaml import safe_load
+import logging
 
 @utils.singleton
 def repositories():
@@ -22,13 +24,12 @@ def registerRepository(name):
 @utils.singleton
 class ScalrServerPluginsInternalRepository:
     def __init__(self):
-        self.plugins = [
-            {
-                'name':'testplugin',
-                'url' : 'file://' + os.path.join(os.path.dirname(__file__), 'samples', 'testplugin.zip'),
-                'archive-type' : 'zip'
-            },
-        ]
+        repo_url = 'https://raw.githubusercontent.com/scalr-tutorials/scalr-plugin-repository/master/plugins.yml'
+        logging.info('Loading plugins list...')
+        with closing(urllib2.urlopen(repo_url)) as repodata:
+            self.repo_data = safe_load(repodata.read())
+            self.plugins = self.repo_data['plugins']
+            logging.info('Plugin list loaded successfully.')
 
     def list_available_plugins(self):
         return [p['name'] for p in self.plugins]
