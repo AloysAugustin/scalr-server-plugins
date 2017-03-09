@@ -1,0 +1,7 @@
+# This goes in ./templates/default/httpd/_proxy_partial.erb
+
+
+ProxyPass /graphics           balancer://graphics/
+ProxyPass /load_statistics    balancer://plotter/
+ProxyPass /plugins            balancer://wsgi/
+ProxyPass /                   balancer://app/
