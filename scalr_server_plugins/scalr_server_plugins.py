@@ -33,7 +33,7 @@ def main(argv=None):
 
     parser = argparse.ArgumentParser(description="Scalr plugin management CLI")
     parser.add_argument('--verbose', '-v', action='count',
-                        help='Increase verbosity: -v -> INFO, -vv -> DEBUG', default=0)
+                        help='Increase verbosity', default=0)
     parser.add_argument('--basePath', help='USED FOR TESTING ONLY - Base directory for plugin installation, with e.g. "~/tmp/"')
 
     subparsers = parser.add_subparsers(metavar='command', dest='command',
@@ -44,9 +44,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     verbose = min(args.verbose, 2)
-    loglevel = {0:logging.WARNING, 
-                1:logging.INFO,
-                2:logging.DEBUG}[verbose]
+    loglevel = {0:logging.INFO,
+                1:logging.DEBUG}[verbose]
 
     logging.basicConfig(format="%(levelname)s: %(message)s", level=loglevel)
 

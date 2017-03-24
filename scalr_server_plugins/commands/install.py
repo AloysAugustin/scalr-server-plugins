@@ -17,6 +17,7 @@ def process(args, config):
     repository = config.getRepository()
 
     plugin_name = args.pluginName
+    logging.info('Looking for plugin in repository...')
     if not plugin_name in repository.list_available_plugins():
         logging.error("Plugin not found in repository!")
         return 1
@@ -34,6 +35,7 @@ def process(args, config):
     create_instance_dir(config, plugin_name, plugin_instance)
     plugin_instance_dir = instance_dir(config, plugin_name, plugin_instance)
     try:
+        logging.info('Installing plugin...')
         repository.install_plugin_in_dir(plugin_name,plugin_instance_dir)
         configure(config, plugin_name, plugin_instance)
         venv_dir = install_venv(config, plugin_instance_dir)
