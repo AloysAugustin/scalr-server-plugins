@@ -34,7 +34,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Scalr plugin management CLI")
     parser.add_argument('--verbose', '-v', action='count',
                         help='Increase verbosity: -v -> INFO, -vv -> DEBUG', default=0)
-    parser.add_argument('--basePath', help='Base directory for plugin installation, used for testing with e.g. "~/tmp/"')
+    parser.add_argument('--basePath', help='USED FOR TESTING ONLY - Base directory for plugin installation, with e.g. "~/tmp/"')
 
     subparsers = parser.add_subparsers(metavar='command', dest='command',
                                        help=make_subparsers_help(parser))
