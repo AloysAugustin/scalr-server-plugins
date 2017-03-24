@@ -52,7 +52,7 @@ def install_venv(config, plugin_instance_dir):
     requirements_path = os.path.join(plugin_instance_dir, 'requirements.txt')
     activate_path = os.path.join(venv_dir, 'bin', 'activate')
     # Create virtualenv
-    virtualenv.main(venv_dir)
+    virtualenv.create_environment(venv_dir)
     if os.path.isfile(requirements_path):
         subprocess.check_call('. {} && pip install -r {}'.format(activate_path, requirements_path), shell=True)
     logging.info('Virtual environment installed.')
