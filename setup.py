@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='scalr_server_plugins',
-      version='0.0.1',
+      version='0.0.2',
       description='Plugin manager for Scalr',
       long_description=readme(),
       url='https://github.com/momohawari/scalr-server-plugins',
