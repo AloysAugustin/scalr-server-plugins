@@ -1,0 +1,42 @@
+{
+  "name": "diamondip",
+  "description": "DiamondIP IPAM integration",
+  "endpoints": [
+    {
+      "path": "/",
+      "description": "Endpoint used to update records in DiamondIP"
+    }
+  ],
+  "parameters": [
+    {
+      "key": "IPCONTROL_LOGIN",
+      "description": "IPcontrol username",
+      "default": "admin"
+    },
+    {
+      "key": "IPCONTROL_PASSWORD",
+      "description": "IPcontrol password",
+      "default": ""
+    },
+    {
+      "key": "IPCONTROL_SERVER",
+      "description": "URL of the IPcontrol server",
+      "default": ""
+    },
+    {
+      "key": "SCALR_SIGNING_KEY",
+      "description": "Scalr signing key for this endpoint",
+      "default": ""
+    },
+    {
+      "key": "STATIC_ZONES",
+      "description": "A space-separated list of static zones. Zones are considered to be static by default.",
+      "default": ""
+    },
+    {
+      "key": "PROXY",
+      "description": "Proxy needed to reach the diamondIP server.",
+      "default": ""
+    }
+  ]
+}

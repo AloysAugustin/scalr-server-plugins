@@ -1,0 +1,17 @@
+{
+  "name": "email_notification",
+  "description": "Send an email to the Farm owner on receiveed Scalr events",
+  "endpoints": [
+    {
+      "path": "/",
+      "description": "This endpoints sends an email when called as a Scalr webhook"
+    }
+  ],
+  "parameters": [
+    {
+      "key": "SCALR_SIGNING_KEY",
+      "description": "Scalr signing key for this endpoint",
+      "default": ""
+    }
+  ]
+}
